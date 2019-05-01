@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Test Richard Linklayer Network
+
+Parameters:
+  NetworkName:
+    Type: String
+    Default: "TestNet"
+  MacAddress:
+    Type: String
+    Default: "\x42\x42\x42\x42\x42\x42"
+  IpAddress:
+    Type: String
+    Default: "192.168.1.21"
+
+Resources:
+  # Warning: this uses Cloudwatch Events to run this function... forever.
+  HttpServer:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: default.handler
+      Runtime: provided
+      Timeout: 120
+      ReservedConcurrentExecutions: 1
+      CodeUri: ./
+      Layers:
+        - arn:aws:lambda:us-west-2:275197385476:layer:richard-linklayer:1
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:FilterLogEvents
+                - logs:GetLogEvents
+                - logs:PutLogEvents
+              Resource: arn:aws:logs:*:*:*
+      Environment:
+        Variables:
+          RUN_CMD: "node -e \"require('http').createServer(function (req, res) { res.end('whoa, dude'); }).listen(3000, '0.0.0.0');\""
+          OL_NET_NAME: !Ref NetworkName
+          OL_MAC_ADDR: !Ref MacAddress
+          OL_IP_ADDR: !Ref IpAddress
+      Events:
+        KeepRunning:
+          Type: Schedule
+          Properties:
+            Schedule: rate(2 minutes)

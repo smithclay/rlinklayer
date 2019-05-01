@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Richard Linklayer Custom Runtime
+
+Resources:
+  DeploymentPermission:
+    Type: "AWS::Lambda::LayerVersionPermission"
+    Properties:
+      Action: lambda:GetLayerVersion
+      LayerVersionArn: !Ref RichardLinklayer
+      Principal: '*'
+
+  RichardLinklayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: richard-linklayer
+      Description: Richard Linklayer Custom Runtime
+      ContentUri: ./bootstrap
+      CompatibleRuntimes:
+        - nodejs8.10
+      LicenseInfo: 'MIT'
+      RetentionPolicy: Retain
